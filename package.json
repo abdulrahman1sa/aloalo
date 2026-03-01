@@ -2,6 +2,9 @@
   "name": "alosa",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
@@ -12,9 +15,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.0",
-    "@prisma/client": "^7.4.0",
     "@supabase/supabase-js": "^2.98.0",
-    "better-sqlite3": "^12.6.2",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.4",
@@ -22,7 +23,6 @@
     "framer-motion": "^12.4.2",
     "lucide-react": "^0.475.0",
     "next": "16.1.6",
-    "prisma": "^7.4.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "socket.io": "^4.8.1",
@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^20",
