@@ -1,8 +1,8 @@
 [build]
 builder = "NIXPACKS"
-nixpacksConfigPath = "nixpacks.toml"
+buildCommand = "npm install --omit=dev --ignore-scripts"
 
 [deploy]
-startCommand = "npm run server:prod"
+startCommand = "npx ts-node --project tsconfig.server.json server/index.ts"
 healthcheckPath = "/health"
 restartPolicyType = "ON_FAILURE"
