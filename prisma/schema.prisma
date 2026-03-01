@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  sender    String
+  avatar    String?
+  channelId String
+  createdAt DateTime @default(now())
+}
+
+model Channel {
+  id   String @id
+  name String
+  type String
+}

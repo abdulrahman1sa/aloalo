@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--bg-main);
+  --color-foreground: var(--fg-main);
+  --color-primary: var(--primary-main);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--bg-secondary);
+  --color-secondary-light: var(--bg-secondary-light);
+  --color-accent: #f43f5e;
+  --color-success: #22c55e;
+}
+
+:root {
+  /* Default OLED Dark Theme */
+  --bg-main: #020202;
+  --fg-main: #ffffff;
+  --primary-main: #6366f1;
+  --primary-dark: #4f46e5;
+  --bg-secondary: #0a0a0c;
+  --bg-secondary-light: #121418;
+  --glass-bg: rgba(18, 20, 24, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+.theme-light {
+  --bg-main: #f8fafc;
+  --fg-main: #0f172a;
+  --bg-secondary: #e2e8f0;
+  --bg-secondary-light: #cbd5e1;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.05);
+}
+
+.theme-ocean {
+  --bg-main: #081121;
+  --fg-main: #ffffff;
+  --bg-secondary: #0c182e;
+  --bg-secondary-light: #162544;
+  --glass-bg: rgba(22, 37, 68, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--fg-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.glass-premium {
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+}
+
+.glow-box {
+  box-shadow: 0 0 20px rgba(var(--primary-main), 0.4);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
