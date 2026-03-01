@@ -10,6 +10,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { io, Socket } from "socket.io-client";
+import { InviteModal } from "@/components/ui/InviteModal";
 
 // ─────────────────────────────────────────────────────────
 // TODO: Replace these with real auth — e.g. next-auth session
@@ -41,6 +42,7 @@ export function ChatArea({ channelId, channelName }: ChatAreaProps) {
     const [isCamOn, setIsCamOn] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [socketConnected, setSocketConnected] = useState(false);
+    const [showInvite, setShowInvite] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
@@ -127,6 +129,14 @@ export function ChatArea({ channelId, channelName }: ChatAreaProps) {
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden" dir="rtl">
 
+            <InviteModal
+                isOpen={showInvite}
+                onClose={() => setShowInvite(false)}
+                channelId={channelId}
+                channelName={channelName}
+                channelType="text"
+            />
+
             {/* ──── Header ──── */}
             <header className="h-14 px-5 flex items-center justify-between border-b border-white/5 glass-premium sticky top-0 z-30">
                 <div className="flex items-center gap-3">
@@ -147,11 +157,7 @@ export function ChatArea({ channelId, channelName }: ChatAreaProps) {
 
                 <div className="flex items-center gap-1">
                     <button
-                        onClick={() => {
-                            const link = `${window.location.origin}/?channel=${channelId}`;
-                            navigator.clipboard.writeText(link);
-                            alert("تم نسخ رابط القناة للمشاركة!");
-                        }}
+                        onClick={() => setShowInvite(true)}
                         aria-label="دعوة الأصدقاء"
                         className="p-2 text-primary hover:text-white hover:bg-primary/20 rounded-xl transition-all border border-primary/20 flex items-center gap-1"
                     >

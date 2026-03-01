@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { InviteModal } from "@/components/ui/InviteModal";
 
 // ─────────────────────────────────────────────────────────
 // TODO: Replace with real auth session
@@ -61,6 +62,7 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
     const [isMuted, setIsMuted] = useState(false);
     const [isDeafened, setIsDeafened] = useState(false);
     const [isCamOn, setIsCamOn] = useState(false);
+    const [showInvite, setShowInvite] = useState(false);
     const [participants, setParticipants] = useState<PeerUser[]>([]);
     const [status, setStatus] = useState<"connecting" | "ready" | "error">("connecting");
 
@@ -210,14 +212,18 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
         }
     };
 
-    const handleInvite = () => {
-        const inviteLink = `${window.location.origin}/?channel=${roomId}`;
-        navigator.clipboard.writeText(inviteLink);
-        alert("تم نسخ رابط الدعوة للغرفة!");
-    };
+    const handleInvite = () => setShowInvite(true);
 
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden" dir="rtl">
+
+            <InviteModal
+                isOpen={showInvite}
+                onClose={() => setShowInvite(false)}
+                channelId={roomId}
+                channelName={roomName}
+                channelType="voice"
+            />
 
             {/* Remote audio nodes */}
             {!isDeafened && participants.map(p =>
