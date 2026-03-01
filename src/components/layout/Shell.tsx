@@ -47,11 +47,17 @@ const THEMES = [
 
 export function Shell() {
     const { user, isLoaded } = useUser();
+    const [channels, setChannels] = useState<Channel[]>(DEFAULT_CHANNELS);
     const [activeChannelId, setActiveChannelId] = useState(DEFAULT_CHANNELS[0].id);
     const [activeServerId, setActiveServerId] = useState(DEFAULT_SERVERS[0].id);
     const [isMuted, setIsMuted] = useState(false);
     const [theme, setTheme] = useState("");
     const [showThemePanel, setShowThemePanel] = useState(false);
+
+    // ─── Modal State ───
+    const [showAddChannel, setShowAddChannel] = useState(false);
+    const [newChannelName, setNewChannelName] = useState("");
+    const [newChannelType, setNewChannelType] = useState<"text" | "voice">("text");
 
     // ─── بيانات المستخدم الحقيقية من Clerk ───
     const currentUserName = user?.username ?? user?.firstName ?? "مستخدم";
@@ -62,7 +68,33 @@ export function Shell() {
         document.documentElement.className = theme;
     }, [theme]);
 
-    const activeChannel = DEFAULT_CHANNELS.find(c => c.id === activeChannelId) ?? DEFAULT_CHANNELS[0];
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const invitedChannel = params.get("channel");
+        if (invitedChannel) {
+            setActiveChannelId(invitedChannel);
+            if (!channels.find(c => c.id === invitedChannel)) {
+                // Add dynamically if not in list
+                setChannels(prev => [...prev, { id: invitedChannel, name: `غرفة مضافة (${invitedChannel.substring(0, 4)})`, type: "text" }]);
+            }
+        }
+    }, []);
+
+    const handleCreateChannel = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newChannelName.trim()) return;
+        const newChannel: Channel = {
+            id: `ch-${Date.now()}`,
+            name: newChannelName.trim(),
+            type: newChannelType
+        };
+        setChannels([...channels, newChannel]);
+        setActiveChannelId(newChannel.id);
+        setShowAddChannel(false);
+        setNewChannelName("");
+    };
+
+    const activeChannel = channels.find(c => c.id === activeChannelId) ?? channels[0];
 
     return (
         <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans select-none" dir="rtl">
@@ -138,12 +170,12 @@ export function Shell() {
                     <div>
                         <div className="flex items-center justify-between px-3 mb-1.5">
                             <span className="text-[10px] font-black uppercase tracking-[1.5px] text-gray-500">القنوات النصية</span>
-                            <button aria-label="إضافة قناة نصية" className="text-gray-500 hover:text-foreground transition-colors">
+                            <button onClick={() => { setNewChannelType("text"); setShowAddChannel(true); }} aria-label="إضافة قناة نصية" className="text-gray-500 hover:text-foreground transition-colors">
                                 <Plus className="w-3.5 h-3.5" />
                             </button>
                         </div>
                         <div className="space-y-[3px]">
-                            {DEFAULT_CHANNELS.filter(c => c.type === "text").map((ch) => (
+                            {channels.filter(c => c.type === "text").map((ch) => (
                                 <button
                                     key={ch.id}
                                     onClick={() => setActiveChannelId(ch.id)}
@@ -165,12 +197,12 @@ export function Shell() {
                     <div>
                         <div className="flex items-center justify-between px-3 mb-1.5">
                             <span className="text-[10px] font-black uppercase tracking-[1.5px] text-gray-500">الغرف الصوتية</span>
-                            <button aria-label="إضافة غرفة صوتية" className="text-gray-500 hover:text-foreground transition-colors">
+                            <button onClick={() => { setNewChannelType("voice"); setShowAddChannel(true); }} aria-label="إضافة غرفة صوتية" className="text-gray-500 hover:text-foreground transition-colors">
                                 <Plus className="w-3.5 h-3.5" />
                             </button>
                         </div>
                         <div className="space-y-[3px]">
-                            {DEFAULT_CHANNELS.filter(c => c.type === "voice").map((ch) => (
+                            {channels.filter(c => c.type === "voice").map((ch) => (
                                 <button
                                     key={ch.id}
                                     onClick={() => setActiveChannelId(ch.id)}
@@ -323,6 +355,41 @@ export function Shell() {
                                         تطبيق
                                     </button>
                                 </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                    {showAddChannel && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-6"
+                            onClick={() => setShowAddChannel(false)}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.95, y: 10 }}
+                                animate={{ scale: 1, y: 0 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full max-w-sm bg-secondary border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6"
+                            >
+                                <h2 className="text-lg font-black text-foreground mb-4">إنشاء قناة جديدة</h2>
+                                <form onSubmit={handleCreateChannel} className="flex flex-col gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-400 mb-1.5 block">النوع</label>
+                                        <div className="flex gap-2">
+                                            <button type="button" onClick={() => setNewChannelType("text")} className={cn("flex-1 py-2 rounded-xl text-sm font-bold border", newChannelType === "text" ? "bg-primary/20 border-primary text-primary" : "bg-white/5 border-transparent text-gray-400")}>نصية</button>
+                                            <button type="button" onClick={() => setNewChannelType("voice")} className={cn("flex-1 py-2 rounded-xl text-sm font-bold border", newChannelType === "voice" ? "bg-success/20 border-success text-success" : "bg-white/5 border-transparent text-gray-400")}>صوتية</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-400 mb-1.5 block">اسم القناة</label>
+                                        <input autoFocus type="text" value={newChannelName} onChange={e => setNewChannelName(e.target.value)} placeholder="مثال: نقاشات-عامة" className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
+                                    </div>
+                                    <div className="flex justify-end gap-2 mt-2">
+                                        <button type="button" onClick={() => setShowAddChannel(false)} className="px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors">إلغاء</button>
+                                        <button type="submit" disabled={!newChannelName.trim()} className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold disabled:opacity-50 transition-colors">إنشاء</button>
+                                    </div>
+                                </form>
                             </motion.div>
                         </motion.div>
                     )}

@@ -60,6 +60,7 @@ interface VoiceRoomProps {
 export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
     const [isMuted, setIsMuted] = useState(false);
     const [isDeafened, setIsDeafened] = useState(false);
+    const [isCamOn, setIsCamOn] = useState(false);
     const [participants, setParticipants] = useState<PeerUser[]>([]);
     const [status, setStatus] = useState<"connecting" | "ready" | "error">("connecting");
 
@@ -72,7 +73,14 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
 
         const init = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                let stream: MediaStream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                    stream.getVideoTracks().forEach(t => t.enabled = false);
+                } catch (e) {
+                    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                }
+
                 if (!mounted) { stream.getTracks().forEach(t => t.stop()); return; }
 
                 localStreamRef.current = stream;
@@ -192,6 +200,22 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
         }
     };
 
+    const toggleVideo = () => {
+        const track = localStreamRef.current?.getVideoTracks()[0];
+        if (track) {
+            track.enabled = !track.enabled;
+            setIsCamOn(track.enabled);
+        } else {
+            alert("الكاميرا غير متوفرة أو لم تمنح الصلاحية.");
+        }
+    };
+
+    const handleInvite = () => {
+        const inviteLink = `${window.location.origin}/?channel=${roomId}`;
+        navigator.clipboard.writeText(inviteLink);
+        alert("تم نسخ رابط الدعوة للغرفة!");
+    };
+
     return (
         <div className="flex flex-col h-full bg-background relative overflow-hidden" dir="rtl">
 
@@ -222,7 +246,7 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
                         <ShieldCheck className="w-3.5 h-3.5" />
                         خصوصية WebRTC
                     </div>
-                    <button aria-label="دعوة" className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-bold transition-all border border-primary/20">
+                    <button onClick={handleInvite} aria-label="دعوة" className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-bold transition-all border border-primary/20">
                         <UserPlus className="w-3.5 h-3.5" />
                         <span className="hidden sm:inline">دعوة</span>
                     </button>
@@ -274,14 +298,22 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
                                     <motion.div
                                         animate={user.isSpeaking ? { scale: [1, 1.04, 1] } : {}}
                                         transition={{ repeat: Infinity, duration: 1.5 }}
-                                        className={cn("w-24 h-24 rounded-full p-[2px] bg-gradient-to-tr shadow-xl", user.color)}
+                                        className={cn("w-24 h-24 rounded-full p-[2px] bg-gradient-to-tr shadow-xl relative", user.color)}
                                     >
-                                        <div className="w-full h-full rounded-full bg-background overflow-hidden border-2 border-background/50">
-                                            <img
-                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`}
-                                                alt={user.name}
-                                                className="w-full h-full object-cover"
-                                            />
+                                        <div className="w-full h-full rounded-full bg-background overflow-hidden border-2 border-background/50 relative">
+                                            {user.stream && user.stream.getVideoTracks().length > 0 && ((user.isLocal && isCamOn) || (!user.isLocal && user.stream.getVideoTracks()[0].enabled)) ? (
+                                                <video
+                                                    ref={node => { if (node && user.stream) node.srcObject = user.stream; }}
+                                                    autoPlay playsInline muted={user.isLocal}
+                                                    className="w-full h-full object-cover scale-150"
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.avatarSeed}`}
+                                                    alt={user.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            )}
                                         </div>
                                     </motion.div>
 
@@ -330,7 +362,11 @@ export function VoiceRoom({ roomId, roomName }: VoiceRoomProps) {
                     <Headphones className="w-5 h-5" />
                 </button>
 
-                <button aria-label="تشغيل الكاميرا" className="p-3.5 bg-white/5 hover:bg-white/10 rounded-2xl text-gray-400 hover:text-white transition-all border border-transparent hover:border-white/10">
+                <button
+                    aria-label={isCamOn ? "إيقاف الكاميرا" : "تشغيل الكاميرا"}
+                    onClick={toggleVideo}
+                    className={cn("p-3.5 rounded-2xl transition-all", isCamOn ? "bg-white/10 hover:bg-white/15 text-white border border-white/20" : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-transparent")}
+                >
                     <Video className="w-5 h-5" />
                 </button>
 

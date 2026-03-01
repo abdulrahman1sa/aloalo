@@ -5,7 +5,7 @@ import {
     Send, Smile, Paperclip, Hash, Users,
     Search, Phone, Video,
     Mic, MicOff, Camera,
-    CameraOff, PhoneOff, Volume2,
+    CameraOff, PhoneOff, Volume2, UserPlus
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -146,6 +146,18 @@ export function ChatArea({ channelId, channelName }: ChatAreaProps) {
                 </div>
 
                 <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => {
+                            const link = `${window.location.origin}/?channel=${channelId}`;
+                            navigator.clipboard.writeText(link);
+                            alert("تم نسخ رابط القناة للمشاركة!");
+                        }}
+                        aria-label="دعوة الأصدقاء"
+                        className="p-2 text-primary hover:text-white hover:bg-primary/20 rounded-xl transition-all border border-primary/20 flex items-center gap-1"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                    </button>
+                    <div className="w-[1px] h-4 bg-white/10 mx-1" />
                     <button
                         aria-label="بدء مكالمة صوتية"
                         onClick={() => setActiveCall("voice")}
